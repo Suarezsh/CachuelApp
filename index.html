@@ -1,0 +1,98 @@
+<!DOCTYPE html>
+<html lang="en">
+
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>Cachuel App</title>
+    <link href="https://cdnjs.cloudflare.com/ajax/libs/bootstrap/5.3.0/css/bootstrap.min.css" rel="stylesheet">
+    <link href="https://cdnjs.cloudflare.com/ajax/libs/font-awesome/6.1.1/css/all.min.css" rel="stylesheet">
+    <style>
+        body {
+            background: linear-gradient(to bottom, rgb(7, 47, 209), rgb(188, 234, 250));
+            height: 100vh;
+            display: flex;
+            flex-direction: column;
+            justify-content: center;
+            align-items: center;
+            text-align: center;
+            color: #fff;
+        }
+
+        #logo {
+            height: 30vh;
+            width: 90%;
+            animation: fadeIn 2s ease-in-out;
+        }
+
+        h1 {
+            color: blue;
+            margin-top: 20px;
+            animation: slideIn 1.5s ease-in-out;
+        }
+
+        h2 {
+            color: green;
+            font-size: 2.5rem;
+            margin-top: 10px;
+            animation: slideIn 2s ease-in-out;
+        }
+
+        .btn {
+            margin: 15px;
+            padding: 15px 30px;
+            font-size: 1.5rem;
+            transition: all 0.3s ease-in-out;
+            box-shadow: 0 4px 8px rgba(0, 0, 0, 0.2);
+        }
+
+        .btn i {
+            margin-right: 10px;
+        }
+
+        .btn:hover {
+            transform: scale(1.1);
+            box-shadow: 0 8px 16px rgba(0, 0, 0, 0.3);
+        }
+
+        @keyframes fadeIn {
+            from {
+                opacity: 0;
+            }
+
+            to {
+                opacity: 1;
+            }
+        }
+
+        @keyframes slideIn {
+            from {
+                transform: translateY(-50px);
+                opacity: 0;
+            }
+
+            to {
+                transform: translateY(0);
+                opacity: 1;
+            }
+        }
+    </style>
+</head>
+
+<body>
+    <img id="logo" src="./logo.png" alt="Logo">
+    <h2>Bienvenido</h2>
+    <div>
+        <a href="login.html" class="btn btn-primary">
+            <i class="fas fa-sign-in-alt"></i> Iniciar Sesión
+        </a>
+        <a href="registro.html" class="btn btn-success">
+            <i class="fas fa-user-plus"></i> Registro
+        </a>
+    </div>
+
+    <script src="https://cdnjs.cloudflare.com/ajax/libs/bootstrap/5.3.0/js/bootstrap.bundle.min.js"></script>
+    <script src="https://cdnjs.cloudflare.com/ajax/libs/font-awesome/6.1.1/js/all.min.js"></script>
+</body>
+
+</html>

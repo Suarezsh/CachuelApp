@@ -1,0 +1,261 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>Cachuelas - Cachuel App</title>
+    <link href="https://cdnjs.cloudflare.com/ajax/libs/bootstrap/5.3.0/css/bootstrap.min.css" rel="stylesheet">
+    <link href="https://cdnjs.cloudflare.com/ajax/libs/font-awesome/6.1.1/css/all.min.css" rel="stylesheet">
+    <style>
+        body {
+            background: linear-gradient(to bottom, white, lightblue);
+            min-height: 100vh;
+            display: flex;
+            flex-direction: column;
+            padding-top: 56px; /* To avoid content overlapping with fixed navbar */
+        }
+        .navbar {
+            background-color: #007bff;
+        }
+        .navbar-brand {
+            color: #fff;
+            font-weight: bold;
+        }
+        .navbar-nav .nav-item .nav-link {
+            color: #fff;
+            transition: border-bottom 0.3s;
+        }
+        .navbar-nav .nav-item .nav-link:hover {
+            border-bottom: 2px solid #fff;
+        }
+        .navbar-text {
+            color: #fff;
+            font-weight: bold;
+        }
+        .container {
+            flex: 1;
+        }
+        .text-center img {
+            max-width: 200px;
+        }
+        .icon {
+            font-size: 4rem;
+            color: #007bff;
+        }
+        .job-card, .worker-card {
+            cursor: pointer;
+            transition: transform 0.3s;
+            box-shadow: 0 4px 8px rgba(0, 0, 0, 0.2);
+            border-radius: 10px;
+            text-align: center;
+            padding: 20px;
+        }
+        .job-card:hover, .worker-card:hover {
+            transform: scale(1.05);
+        }
+        .modal-header {
+            background-color: #007bff;
+            color: #fff;
+        }
+        .btn-contact {
+            width: 100%;
+            padding: 10px;
+            font-size: 1.2rem;
+            border-radius: 5px;
+            transition: all 0.3s ease-in-out;
+            box-shadow: 0 4px 8px rgba(0, 0, 0, 0.2);
+        }
+        .btn-contact:hover {
+            transform: scale(1.05);
+            box-shadow: 0 8px 16px rgba(0, 0, 0, 0.3);
+        }
+        @media (max-width: 768px) {
+            .navbar-nav {
+                text-align: center;
+            }
+        }
+    </style>
+</head>
+<body>
+    <div id="app">
+        <nav class="navbar navbar-expand-lg navbar-dark fixed-top">
+            <a class="navbar-brand" href="#"><i class="fas fa-user"></i> {{ userType }}: {{ userName }}</a>
+            <button class="navbar-toggler" type="button" data-bs-toggle="collapse" data-bs-target="#navbarNav" aria-controls="navbarNav" aria-expanded="false" aria-label="Toggle navigation">
+                <span class="navbar-toggler-icon"></span>
+            </button>
+            <div class="collapse navbar-collapse" id="navbarNav">
+                <ul class="navbar-nav me-auto">
+                    <li class="nav-item">
+                        <a class="nav-link" href="index.html"><i class="fas fa-home"></i> Inicio</a>
+                    </li>
+                    <li class="nav-item">
+                        <a class="nav-link active" href="cachuelas.html"><i class="fas fa-briefcase"></i> Cachuelas</a>
+                    </li>
+                    <li class="nav-item">
+                        <a class="nav-link" href="contactos.html"><i class="fas fa-address-book"></i> Contactos</a>
+                    </li>
+                    <li class="nav-item">
+                        <a class="nav-link" href="perfil.html"><i class="fas fa-user"></i> Perfil</a>
+                    </li>
+                </ul>
+            </div>
+        </nav>
+        <div class="container mt-4">
+            <div v-if="userType === 'Trabajador'" class="mb-4">
+                <input type="text" class="form-control" placeholder="Buscar trabajos..." v-model="searchQuery">
+            </div>
+            <div v-if="userType === 'Trabajador'" class="row">
+                <div class="col-md-4 mb-4" v-for="job in filteredJobs" :key="job.id">
+                    <div class="card job-card" @click="selectJob(job)">
+                        <i class="fas fa-briefcase icon"></i>
+                        <div class="card-body">
+                            <h5 class="card-title">{{ job.title }}</h5>
+                            <p class="card-text">{{ job.description }}</p>
+                            <p class="card-text"><strong>Empleador:</strong> {{ job.employer }}</p>
+                            <p class="card-text"><strong>Teléfono:</strong> {{ job.phone }}</p>
+                        </div>
+                    </div>
+                </div>
+            </div>
+            <div v-if="userType === 'Empleador'" class="mb-4">
+                <input type="text" class="form-control" placeholder="Buscar perfiles de trabajadores..." v-model="searchQuery">
+            </div>
+            <div v-if="userType === 'Empleador'" class="row">
+                <div class="col-md-4 mb-4" v-for="worker in filteredWorkers" :key="worker.id">
+                    <div class="card worker-card" @click="selectWorker(worker)">
+                        <i class="fas fa-user icon"></i>
+                        <div class="card-body">
+                            <h5 class="card-title">{{ worker.name }}</h5>
+                            <p class="card-text">{{ worker.skills ? worker.skills.join(', ') : '' }}</p>
+                            <p class="card-text"><strong>Teléfono:</strong> {{ worker.phone }}</p>
+                        </div>
+                    </div>
+                </div>
+            </div>
+        </div>
+
+        <div class="modal fade" id="jobModal" tabindex="-1" aria-labelledby="jobModalLabel" aria-hidden="true">
+            <div class="modal-dialog">
+                <div class="modal-content">
+                    <div class="modal-header">
+                        <h5 class="modal-title" id="jobModalLabel">{{ selectedJob.title }}</h5>
+                        <button type="button" class="btn-close" data-bs-dismiss="modal" aria-label="Close"></button>
+                    </div>
+                    <div class="modal-body">
+                        <p>{{ selectedJob.fullDescription }}</p>
+                        <p><strong>Monto de Pago: </strong>{{ selectedJob.payment }}</p>
+                    </div>
+                    <div class="modal-footer">
+                        <button type="button" class="btn btn-primary btn-contact" @click="contactJob">Contactar</button>
+                    </div>
+                </div>
+            </div>
+        </div>
+
+        <div class="modal fade" id="workerModal" tabindex="-1" aria-labelledby="workerModalLabel" aria-hidden="true">
+            <div class="modal-dialog">
+                <div class="modal-content">
+                    <div class="modal-header">
+                        <h5 class="modal-title" id="workerModalLabel">{{ selectedWorker.name }}</h5>
+                        <button type="button" class="btn-close" data-bs-dismiss="modal" aria-label="Close"></button>
+                    </div>
+                    <div class="modal-body">
+                        <p><strong>Habilidades: </strong>{{ selectedWorker.skills ? selectedWorker.skills.join(', ') : '' }}</p>
+                        <p>{{ selectedWorker.description }}</p>
+                    </div>
+                    <div class="modal-footer">
+                        <button type="button" class="btn btn-primary btn-contact" @click="contactWorker">Contactar</button>
+                    </div>
+                </div>
+            </div>
+        </div>
+    </div>
+
+    <script src="https://cdn.jsdelivr.net/npm/vue@2.6.14"></script>
+    <script src="https://cdnjs.cloudflare.com/ajax/libs/bootstrap/5.3.0/js/bootstrap.bundle.min.js"></script>
+    <script>
+        new Vue({
+            el: '#app',
+            data: {
+                userType: '',
+                userName: '',
+                searchQuery: '',
+                jobs: [
+                    { id: 1, title: 'Fotografía', description: 'Servicios de fotografía para eventos.', fullDescription: 'Ofrecemos servicios de fotografía profesional para bodas, cumpleaños y eventos corporativos.', payment: 'S/ 500', employer: 'Carlos Sánchez', phone: '987654321' },
+                    { id: 2, title: 'Diseño Gráfico', description: 'Creación de logos y material publicitario.', fullDescription: 'Diseño gráfico especializado en la creación de logos, flyers y material publicitario.', payment: 'S/ 300', employer: 'María Pérez', phone: '987654322' },
+                    { id: 3, title: 'Desarrollo Web', description: 'Desarrollo de sitios web y aplicaciones.', fullDescription: 'Desarrollo de sitios web personalizados y aplicaciones web responsivas.', payment: 'S/ 1500', employer: 'Juan López', phone: '987654323' },
+                    { id: 4, title: 'Clases Particulares', description: 'Clases de matemáticas y ciencias.', fullDescription: 'Clases particulares de matemáticas, física y química para todos los niveles.', payment: 'S/ 100 por hora', employer: 'Ana Torres', phone: '987654324' },
+                    { id: 5, title: 'Servicio de Catering', description: 'Catering para eventos y reuniones.', fullDescription: 'Ofrecemos servicios de catering para eventos corporativos, bodas y celebraciones.', payment: 'S/ 2000', employer: 'Luis García', phone: '987654325' },
+                    { id: 6, title: 'Pintura de Casas', description: 'Pintura interior y exterior de casas.', fullDescription: 'Servicios profesionales de pintura para interiores y exteriores.', payment: 'S/ 1200', employer: 'Daniel Ortiz', phone: '987654326' },
+                    { id: 7, title: 'Jardinería', description: 'Mantenimiento de jardines.', fullDescription: 'Servicios de jardinería, incluyendo poda, plantación y mantenimiento general.', payment: 'S/ 400', employer: 'Laura Vega', phone: '987654327' },
+                    { id: 8, title: 'Transporte', description: 'Transporte de mercancías.', fullDescription: 'Ofrecemos servicios de transporte de mercancías a nivel nacional.', payment: 'S/ 1000', employer: 'Pedro Jiménez', phone: '987654328' },
+                    { id: 9, title: 'Limpieza de Hogar', description: 'Servicios de limpieza para hogares.', fullDescription: 'Servicios de limpieza profunda para casas y apartamentos.', payment: 'S/ 300', employer: 'Sofía Morales', phone: '987654329' },
+                    { id: 10, title: 'Reparación de Electrodomésticos', description: 'Reparación de electrodomésticos.', fullDescription: 'Servicios de reparación para todo tipo de electrodomésticos.', payment: 'S/ 150', employer: 'Miguel Castro', phone: '987654330' }
+                ],
+                workers: [
+                    { id: 1, name: 'Juan Pérez', skills: ['Fotografía', 'Edición de Fotos'], description: 'Fotógrafo profesional con más de 10 años de experiencia en eventos y retratos.', phone: '987654321' },
+                    { id: 2, name: 'María García', skills: ['Diseño Gráfico', 'Ilustración'], description: 'Diseñadora gráfica especializada en branding y diseño publicitario.', phone: '987654322' },
+                    { id: 3, name: 'Carlos López', skills: ['Desarrollo Web', 'SEO'], description: 'Desarrollador web con experiencia en SEO y marketing digital.', phone: '987654323' },
+                    { id: 4, name: 'Ana Torres', skills: ['Traducción', 'Edición'], description: 'Traductora profesional con experiencia en la traducción de textos comerciales y literarios.', phone: '987654324' },
+                    { id: 5, name: 'Luis Rodríguez', skills: ['Asesoría Legal', 'Consultoría'], description: 'Abogado con 15 años de experiencia en asesoría legal y consultoría empresarial.', phone: '987654325' },
+                    { id: 6, name: 'Laura Vega', skills: ['Jardinería', 'Diseño de Jardines'], description: 'Jardinera profesional con experiencia en diseño y mantenimiento de jardines.', phone: '987654326' },
+                    { id: 7, name: 'Pedro Jiménez', skills: ['Transporte', 'Logística'], description: 'Transportista con experiencia en logística y distribución de mercancías.', phone: '987654327' },
+                    { id: 8, name: 'Sofía Morales', skills: ['Limpieza', 'Organización'], description: 'Profesional de la limpieza con experiencia en organización de espacios.', phone: '987654328' },
+                    { id: 9, name: 'Miguel Castro', skills: ['Reparación de Electrodomésticos', 'Mantenimiento'], description: 'Técnico en reparación de electrodomésticos con amplia experiencia.', phone: '987654329' },
+                    { id: 10, name: 'Daniel Ortiz', skills: ['Pintura', 'Reparaciones'], description: 'Pintor profesional con experiencia en reparaciones menores y decoración.', phone: '987654330' },
+                    { id: 11, name: 'Carmen Díaz', skills: ['Catering', 'Cocina'], description: 'Chef con experiencia en catering y cocina gourmet para eventos.', phone: '987654331' },
+                    { id: 12, name: 'José Fernández', skills: ['Electricista', 'Mantenimiento Eléctrico'], description: 'Electricista certificado con 8 años de experiencia en mantenimiento e instalaciones eléctricas.', phone: '987654332' },
+                    { id: 13, name: 'Patricia Martínez', skills: ['Cuidados de Ancianos', 'Enfermería'], description: 'Enfermera con experiencia en cuidados de ancianos y pacientes crónicos.', phone: '987654333' },
+                    { id: 14, name: 'Roberto Gómez', skills: ['Fontanería', 'Reparaciones de Fontanería'], description: 'Fontanero con experiencia en reparación e instalación de sistemas de fontanería.', phone: '987654334' },
+                    { id: 15, name: 'Lucía Pérez', skills: ['Maquillaje', 'Estilismo'], description: 'Maquilladora profesional con experiencia en estilismo para eventos y sesiones fotográficas.', phone: '987654335' },
+                    { id: 16, name: 'Andrés Morales', skills: ['Carpintería', 'Muebles a Medida'], description: 'Carpintero especializado en la creación de muebles a medida y reparaciones.', phone: '987654336' },
+                    { id: 17, name: 'Elena Ruiz', skills: ['Redacción', 'Edición de Textos'], description: 'Redactora y editora con experiencia en creación de contenido para blogs y revistas.', phone: '987654337' },
+                    { id: 18, name: 'Raúl Navarro', skills: ['Seguridad', 'Vigilancia'], description: 'Guardia de seguridad con experiencia en vigilancia y protección de propiedades.', phone: '987654338' }
+                ],
+                selectedJob: {},
+                selectedWorker: {}
+            },
+            computed: {
+                filteredJobs() {
+                    return this.jobs.filter(job => job.title.toLowerCase().includes(this.searchQuery.toLowerCase()));
+                },
+                filteredWorkers() {
+                    return this.workers.filter(worker => worker.name.toLowerCase().includes(this.searchQuery.toLowerCase()));
+                }
+            },
+            methods: {
+                selectJob(job) {
+                    this.selectedJob = job;
+                    new bootstrap.Modal(document.getElementById('jobModal')).show();
+                },
+                selectWorker(worker) {
+                    this.selectedWorker = worker;
+                    new bootstrap.Modal(document.getElementById('workerModal')).show();
+                },
+                contactJob() {
+                    alert('Se contactó con éxito');
+                    setTimeout(() => {
+                        new bootstrap.Modal(document.getElementById('jobModal')).hide();
+                    }, 2000);
+                },
+                contactWorker() {
+                    alert('Se contactó con éxito');
+                    setTimeout(() => {
+                        new bootstrap.Modal(document.getElementById('workerModal')).hide();
+                    }, 2000);
+                }
+            },
+            created() {
+                let loggedInUser = JSON.parse(localStorage.getItem('loggedInUser'));
+                let users = JSON.parse(localStorage.getItem('users')) || [];
+                let user = users.find(user => user.id === loggedInUser);
+
+                if (user) {
+                    this.userName = `${user.nombres} ${user.apellidos}`;
+                    this.userType = user.role === 'trabajador' ? 'Trabajador' : 'Empleador';
+                }
+            }
+        });
+    </script>
+</body>
+</html>
